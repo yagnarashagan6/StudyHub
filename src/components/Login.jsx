@@ -6,7 +6,7 @@ const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL ||
   (window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://<your-render-backend-url>.onrender.com"); // <-- Replace with your Render backend
+    : "https://studyhub-backend.onrender.com"); // <-- Replace with your Render backend
 
 // Separate Login Component for better understanding
 function Login({ onLoginSuccess }) {
@@ -71,7 +71,7 @@ function Login({ onLoginSuccess }) {
     const googleAuthUrl =
       window.location.hostname === "localhost"
         ? "http://localhost:5000/auth/google"
-        : "https://<your-render-backend-url>.onrender.com/auth/google"; // <-- Replace with your Render backend
+        : "https://studyhub-backend.onrender.com/auth/google"; // <-- Replace with your Render backend
     window.location.href = googleAuthUrl;
   };
 
