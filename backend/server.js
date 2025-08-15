@@ -11,17 +11,21 @@ dotenv.config({ path: path.resolve(process.cwd(), "../.env") });
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const MONGO_URI = process.env.MONGO_URI;
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 const app = express();
 app.use(express.json());
 
+// ✅ Initialize passport
+app.use(passport.initialize());
+
+// Frontend + backend URLs
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 const CALLBACK_URL = process.env.BACKEND_URL
   ? `${process.env.BACKEND_URL}/auth/google/callback`
-  : "http://localhost:5000/auth/google/callback";
+  : "https://studyhub-d1bo.onrender.com/auth/google/callback";
 
-// CORS: allow both localhost and production frontend
+// ✅ CORS setup
 app.use(
   cors({
     origin: [FRONTEND_URL, "http://localhost:5173"],
@@ -29,7 +33,6 @@ app.use(
   })
 );
 
-// Ensure CORS headers on all responses
 app.use((req, res, next) => {
   const allowedOrigins = [FRONTEND_URL, "http://localhost:5173"];
   const origin = req.headers.origin;
@@ -45,7 +48,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Add debugging to check if env vars are loaded
+// Debug env vars
 console.log(
   "GOOGLE_CLIENT_ID:",
   process.env.GOOGLE_CLIENT_ID ? "Set" : "Missing"
@@ -54,7 +57,8 @@ console.log(
   "GOOGLE_CLIENT_SECRET:",
   process.env.GOOGLE_CLIENT_SECRET ? "Set" : "Missing"
 );
-console.log("NODE_ENV:", process.env.NODE_ENV);
+console.log("FRONTEND_URL:", FRONTEND_URL);
+console.log("CALLBACK_URL:", CALLBACK_URL);
 
 // MongoDB connection
 mongoose
@@ -72,7 +76,7 @@ const UserSchema = new mongoose.Schema({
 });
 const User = mongoose.model("User", UserSchema);
 
-// Passport Google Strategy
+// ✅ Passport Google Strategy
 passport.use(
   new GoogleStrategy(
     {
@@ -82,6 +86,10 @@ passport.use(
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
+        if (!profile || !profile.id || !profile.emails || !profile.photos) {
+          console.error("Google profile missing fields:", profile);
+          return done(new Error("Google profile incomplete"), null);
+        }
         let user = await User.findOne({ googleId: profile.id });
         if (!user) {
           user = new User({
@@ -94,40 +102,47 @@ passport.use(
         }
         return done(null, user);
       } catch (err) {
+        console.error("GoogleStrategy error:", err.stack || err);
         return done(err, null);
       }
     }
   )
 );
 
-// Google login route
+// Google login
 app.get(
   "/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-// Callback route
+// Google callback
 app.get(
   "/auth/google/callback",
   passport.authenticate("google", { session: false }),
   (req, res) => {
-    const payload = {
-      id: req.user.id,
-      username: req.user.username,
-      profilePicture: req.user.profilePicture,
-    };
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
-
-    // Redirect to correct frontend based on env
-    const redirectUrl =
-      FRONTEND_URL === "http://localhost:5173"
-        ? `http://localhost:5173/main?token=${token}`
-        : `${FRONTEND_URL}/main?token=${token}`;
-    res.redirect(redirectUrl);
+    try {
+      console.log("JWT_SECRET:", JWT_SECRET ? "Set" : "Missing");
+      console.log("User from Google:", req.user);
+      if (!req.user) {
+        console.error("No user returned from Google OAuth");
+        return res.status(500).send("Google authentication failed");
+      }
+      const payload = {
+        id: req.user._id, // <-- FIXED: use _id
+        username: req.user.username,
+        profilePicture: req.user.profilePicture,
+      };
+      const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+      const redirectUrl = `${FRONTEND_URL}?token=${token}`;
+      res.redirect(redirectUrl);
+    } catch (err) {
+      console.error("OAuth callback error:", err.stack || err);
+      res.status(500).send("Internal Server Error");
+    }
   }
 );
 
-// Token verification route
+// Verify token
 app.get("/verify-token", async (req, res) => {
   const token = req.header("Authorization")?.replace("Bearer ", "");
   if (!token) return res.status(401).json({ msg: "No token" });
@@ -141,47 +156,36 @@ app.get("/verify-token", async (req, res) => {
   }
 });
 
-// Register endpoint
+// Register
 app.post("/register", async (req, res) => {
   const { username, email, password } = req.body;
-  console.log("Register attempt:", { username, email });
   if (!username || !email || !password) {
-    console.log("Missing fields in registration");
     return res.status(400).json({ msg: "All fields required" });
   }
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    console.log("Email already registered:", email);
     return res.status(400).json({ msg: "Email already registered" });
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const user = new User({ username, email, password: hashedPassword });
   await user.save();
-  console.log("Registration successful for:", email);
   res.json({ msg: "Registration successful! Please login." });
 });
 
-// Login endpoint
+// Login
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-  console.log("Login attempt:", { email });
   if (!email || !password)
     return res.status(400).json({ msg: "All fields required" });
 
-  // Explicitly select password field
   const user = await User.findOne({ email }).select("+password");
-  if (!user || !user.password) {
-    console.log("Invalid credentials: user not found or no password");
+  if (!user || !user.password)
     return res.status(400).json({ msg: "Invalid credentials" });
-  }
 
   const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) {
-    console.log("Invalid credentials: password mismatch");
-    return res.status(400).json({ msg: "Invalid credentials" });
-  }
+  if (!isMatch) return res.status(400).json({ msg: "Invalid credentials" });
 
   const payload = {
     id: user._id,

@@ -3,10 +3,9 @@ import "../styles/Login.css";
 
 // Use Render backend in production, localhost in dev, or env override
 const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ||
-  (window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://studyhub-d1bo.onrender.com"); // <-- Replace with your Render backend
+  import.meta.env.VITE_API_BASE_URL || "https://studyhub-d1bo.onrender.com"; // Always use production backend
+
+const BACKEND_URL = "https://studyhub-d1bo.onrender.com"; // Always use production backend
 
 // Separate Login Component for better understanding
 function Login({ onLoginSuccess }) {
@@ -67,12 +66,7 @@ function Login({ onLoginSuccess }) {
   };
 
   const handleGoogleLogin = () => {
-    // Use Render backend for Google OAuth in production, localhost in dev
-    const googleAuthUrl =
-      window.location.hostname === "localhost"
-        ? "http://localhost:5000/auth/google"
-        : "https://studyhub-d1bo.onrender.com/auth/google"; // <-- Replace with your Render backend
-    window.location.href = googleAuthUrl;
+    window.location.href = `${BACKEND_URL}/auth/google`;
   };
 
   const toggleAuthMode = () => {

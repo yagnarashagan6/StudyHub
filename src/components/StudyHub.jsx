@@ -1287,8 +1287,10 @@ export default function App() {
   }, [isSidebarOpen]);
 
   // Auth check and login success from StudyHubWithLoginhub.jsx
+  // ...existing code...
   useEffect(() => {
     const checkAuth = async () => {
+      // 1. Extract token from URL params
       const urlParams = new URLSearchParams(window.location.search);
       const urlToken = urlParams.get("token");
       const authError = urlParams.get("error");
@@ -1296,6 +1298,7 @@ export default function App() {
       if (authError) {
         console.error("Authentication error:", authError);
         setError("Authentication failed. Please try again.");
+        // 3. Clean up the URL
         window.history.replaceState(
           {},
           document.title,
@@ -1306,7 +1309,9 @@ export default function App() {
       }
 
       if (urlToken) {
+        // 2. Save token in localStorage
         localStorage.setItem("token", urlToken);
+        // 3. Clean up the URL so ?token=... disappears
         window.history.replaceState(
           {},
           document.title,
@@ -1338,6 +1343,7 @@ export default function App() {
     };
     checkAuth();
   }, []);
+  // ...existing code...
 
   // Load initial content when user is authenticated
   useEffect(() => {
