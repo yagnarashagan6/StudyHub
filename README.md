@@ -1,20 +1,34 @@
-# StudyHub
+# 🚀 StudyHub
 
-A full-stack educational video search and management platform.
+A full-stack platform to search, manage, and discover educational YouTube videos. Built with React, Express, and MongoDB.
 
-## Features
+---
 
-- Search YouTube educational videos by channel, language, and category
-- User authentication (email/password & Google OAuth)
-- Manage favorite videos, channels, and categories
-- Responsive UI (React + Vite)
+## ✨ Features
 
-## Deployment
+- 🔎 **Smart Search:** Find YouTube educational videos by channel, language, and category.
+- 🔐 **Authentication:** Secure login via email/password & Google OAuth.
+- ⭐ **Favorites:** Save and organize your favorite videos, channels, and categories.
+- 📱 **Responsive UI:** Seamless experience on desktop and mobile (React + Vite).
+- 🛡️ **Secure Backend:** JWT authentication, environment-based secrets, and robust data management.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** React, Vite, React Router, React Icons
+- **Backend:** Express, Mongoose, Passport, JWT
+- **Database:** MongoDB
+- **APIs:** YouTube Data API
+
+---
+
+## 🚚 Deployment
 
 - **Frontend:** [Netlify](https://www.netlify.com/)
 - **Backend:** [Render](https://render.com/)
 
-### Environment Variables
+### 🌱 Environment Variables
 
 #### Frontend (`.env`)
 
@@ -34,36 +48,56 @@ FRONTEND_URL=https://your-frontend.netlify.app
 PORT=5000
 ```
 
-### Local Development
+---
 
-- **Frontend:**
+## 🧑‍💻 Local Development
 
-  ```
-  npm install
-  npm run dev
-  ```
+### Frontend
 
-  Runs at [http://localhost:5173](http://localhost:5173)
+```sh
+npm install
+npm run dev
+```
 
-- **Backend:**
-  ```
-  npm install
-  npm start
-  ```
-  Runs at [http://localhost:5000](http://localhost:5000)
+Runs at [http://localhost:5173](http://localhost:5173)
 
-### Production
+### Backend
+
+```sh
+npm install
+npm start
+```
+
+Runs at [http://localhost:5000](http://localhost:5000)
+
+---
+
+## 🚀 Production
 
 - Set environment variables on Netlify and Render as above.
-- Netlify will use `VITE_API_BASE_URL` to connect to the backend.
+- Netlify uses `VITE_API_BASE_URL` to connect to the backend.
 
-## Security
+---
+
+## 🔒 Security
 
 - **Never commit your `.env` files** (already in `.gitignore`).
 - Set all secrets in your deployment dashboards.
 
 ---
 
-## License
+## 📄 License
 
 MIT
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
+
+---
+
+## 📬 Contact
+
+Questions or feedback? Open an issue or email [yaknarashagan2@gmail.com](mailto:yaknarashagan2@gmail.com)
